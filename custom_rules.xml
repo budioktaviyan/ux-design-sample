@@ -1,0 +1,77 @@
+<project>
+    <!-- create timestamp -->
+    <tstamp />
+
+    <!-- mirror release target into dist for jenkins -->
+    <target name="dist" depends="release" />
+
+    <!-- initialize folder -->
+    <target name="dist-init" >
+        <!-- extracting data from AndroidManifest.xml -->
+        <xpath
+            expression="/manifest/@android:versionCode"
+            input="${manifest.abs.file}"
+            output="version.code" />
+        <xpath
+            expression="/manifest/@android:versionName"
+            input="${manifest.abs.file}"
+            output="version.name" />
+
+        <!-- custom properties -->
+        <property
+            name="dist.apk"
+            value="${dist.dir}/${apk.prefix}_${DSTAMP}_${TSTAMP}_v${version.name}.apk" />
+        <property
+            name="dist.source.base"
+            value="${dist.src}/${DSTAMP}_${TSTAMP}_v${version.name}" />
+        <property
+            name="dist.source.zip"
+            value="${dist.dir}/${apk.prefix}_${DSTAMP}_${TSTAMP}_v${version.name}.zip" />
+        <property
+            name="dist.source.zip.dest"
+            value="${dist.src}/${DSTAMP}_${TSTAMP}_v${version.name}" />
+        <mkdir dir="${dist.dir}" />
+    </target>
+
+    <!-- post build target will be executed after dist-init and zip-source -->
+    <target
+        name="-post-build"
+        depends="dist-init, zip-source" >
+
+        <echo>copying distribution into... ${dist.apk}</echo>
+        <echo>out final file... ${out.final.file}</echo>
+
+        <copy
+            file="${out.final.file}"
+            tofile="${dist.apk}" />
+    </target>
+
+    <!-- cleaning output compilation dir -->
+    <target name="-pre-clean" >
+        <delete dir="${out.dir}" />
+    </target>
+
+    <!-- packaging source files for distribution -->
+    <target
+        name="zip-source"
+        depends="dist-init" >
+
+        <echo>zipping source into... ${dist.source.zip}</echo>
+
+        <!-- Copying to temp dir -->
+        <copy todir="${dist.source.zip.dest}" >
+            <fileset dir="." includes="**" >
+                <exclude name="**/.settings/**" />
+                <exclude name="**/gen/**" />
+                <exclude name="**/bin/**" />
+                <exclude name="**/dist/**" />
+            </fileset>
+        </copy>
+
+        <!-- zipping temp dir -->
+        <zip basedir="${dist.source.base}" destfile="${dist.source.zip}" />
+
+        <!-- removing temp dir -->
+        <delete dir="${dist.src}" />
+    </target>
+</project>

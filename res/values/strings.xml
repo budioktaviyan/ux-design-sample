@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">UX Sample</string>
+    <string name="label_input">S U B M I T</string>
+    <string name="hint_input">Fill some text</string>
+</resources>
